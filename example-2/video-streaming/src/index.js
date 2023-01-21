@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const http = require("http");
 
+
 //
 // Send the "viewed" to the history microservice.
 //
