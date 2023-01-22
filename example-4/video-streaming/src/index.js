@@ -32,10 +32,10 @@ function connectRabbit() {
 //
 // Send the "viewed" to the history microservice.
 //
-function sendViewedMessage(messageChannel, videoPath) {
+function sendViewedMessage(messageChannel, videoPath ,receiveID) {
     console.log(`Publishing message on "viewed" exchange.`);
         
-    const msg = { videoPath: videoPath };
+    const msg = { videoPath: videoPath, receiveID };
     const jsonMsg = JSON.stringify(msg);
     messageChannel.publish("viewed", "", Buffer.from(jsonMsg)); // Publish message to the "viewed" exchange.
 }
@@ -46,23 +46,72 @@ function sendViewedMessage(messageChannel, videoPath) {
 function setupHandlers(app, messageChannel) {
     app.get("/video", (req, res) => { // Route for streaming video.
 
-        const videoPath = "./videos/SampleVideo_1280x720_1mb.mp4";
-        fs.stat(videoPath, (err, stats) => {
-            if (err) {
-                console.error("An error occurred ");
-                res.sendStatus(500);
-                return;
-            }
-    
-            res.writeHead(200, {
-                "Content-Length": stats.size,
-                "Content-Type": "video/mp4",
-            });
-    
-            fs.createReadStream(videoPath).pipe(res);
+        let videoPath = "./videos/right_back.mp4"; // avoid unknown id if not in just let it play
 
-            sendViewedMessage(messageChannel, videoPath); // Send message to "history" microservice that this video has been "viewed".
-        });
+        let receiveID = +req.query.id
+
+        if(receiveID !==1 && receiveID !==2){ // Weird idea just avoid someone with wrong ID. e.g.?id=555
+            videoPath = "./videos/right_back.mp4";
+            fs.stat(videoPath, (err, stats) => {
+                if (err) {
+                    console.error("An error occurred ");
+                    res.sendStatus(500);
+                    return;
+                }
+        
+                res.writeHead(200, {
+                    "Content-Length": stats.size,
+                    "Content-Type": "video/mp4",
+                });
+        
+                fs.createReadStream(videoPath).pipe(res);
+    
+                
+            }); // No need to send to history.
+            
+        }
+
+        if(receiveID ===1){
+            videoPath = "./videos/video2.mp4";
+        }
+        if(receiveID ===2){
+            videoPath = "./videos/SampleVideo_1280x720_1mb.mp4";
+        }
+
+        if(receiveID ===1 || receiveID ===2){
+            fs.stat(videoPath, (err, stats) => {
+                if (err) {
+                    console.error("An error occurred ");
+                    res.sendStatus(500);
+                    return;
+                }
+        
+                res.writeHead(200, {
+                    "Content-Length": stats.size,
+                    "Content-Type": "video/mp4",
+                });
+        
+                fs.createReadStream(videoPath).pipe(res);
+    
+                sendViewedMessage(messageChannel, videoPath ,receiveID); // Send message to "history" microservice that this video has been "viewed".
+            });
+        }
+        // fs.stat(videoPath, (err, stats) => {
+        //     if (err) {
+        //         console.error("An error occurred ");
+        //         res.sendStatus(500);
+        //         return;
+        //     }
+    
+        //     res.writeHead(200, {
+        //         "Content-Length": stats.size,
+        //         "Content-Type": "video/mp4",
+        //     });
+    
+        //     fs.createReadStream(videoPath).pipe(res);
+
+        //     sendViewedMessage(messageChannel, videoPath ,receiveID); // Send message to "history" microservice that this video has been "viewed".
+        // });
     });
 }
 
