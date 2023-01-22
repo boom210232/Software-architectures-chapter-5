@@ -61,6 +61,7 @@ function setupHandlers(app, db, messageChannel) {
         // ... ADD YOUR CODE HERE TO PROCESS THE MESSAGE ...
 
         console.log("Acknowledging message was handled.");
+        console.log(`recommendation video ${(JSON.stringify(parsedMsg.receiveID))}`)
 
         messageChannel.ack(msg); // If there is no error, acknowledge the message.
     };
