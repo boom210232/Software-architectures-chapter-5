@@ -58,9 +58,10 @@ function setupHandlers(app, db, messageChannel) {
 
         const parsedMsg = JSON.parse(msg.content.toString()); // Parse the JSON message.
         
-        return videosCollection.insertOne({ videoPath: parsedMsg.videoPath }) // Record the "view" in the database.
-            .then(() => {
+        return videosCollection.insertOne({ videoPath: parsedMsg.videoPath , view: "view-"+parsedMsg.receiveID }) // Record the "view" in the database.
+            .then(() => { // In question mean add view with path id???
                 console.log("Acknowledging message was handled.");
+                console.log(`viewed-${(JSON.stringify(parsedMsg.receiveID))}`) // Add view- "for ????"
                 
                 messageChannel.ack(msg); // If there is no error, acknowledge the message.
             });
